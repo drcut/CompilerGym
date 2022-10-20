@@ -128,7 +128,7 @@ Status BenchmarkFactory::addBitcode(const std::string& uri, const Bitcode& bitco
       realizeDynamicConfig(realDynamicConfigProto, scratchDirectory);
 
   BaselineCosts baselineCosts;
-  RETURN_IF_ERROR(setBaselineCosts(*module, workingDirectory_, realDynamicConfig, &baselineCosts));
+  // RETURN_IF_ERROR(setBaselineCosts(*module, workingDirectory_, realDynamicConfig, &baselineCosts));
 
   sys::error_code ec;
   fs::remove_all(scratchDirectory, ec);

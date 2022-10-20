@@ -507,7 +507,8 @@ def validator(
     DYNAMIC_CONFIGS[uri.path].append(
         BenchmarkDynamicConfig(
             build_cmd=Command(
-                argument=["$CC", "$IN"]
+                # argument=["llc", "-O3", "$IN", "-o", "/tmp/tmp.o", ";", "$CC", "$IN"]
+                argument=["$LLC", "-O3", "-filetype=obj", "$IN", "-o", "/tmp/tmp.o", ";", "$CC", "/tmp/tmp.o", "-o", "a.out"]
                 + llvm_benchmark.get_system_library_flags()
                 + linkopts,
                 timeout_seconds=60,
@@ -714,7 +715,153 @@ def setup_ghostscript_library_files(dataset_id: int) -> Callable[[Path], None]:
 
     return setup
 
+validator(
+    benchmark="benchmark://cbench-v1/bitcount",
+    cmd="$BIN 1125000",
+)
 
+# validator(
+#     benchmark="benchmark://cbench-v1/bitcount",
+#     cmd="$BIN 512",
+# )
+
+validator(
+    benchmark="benchmark://cbench-v1/blowfish",
+    cmd=f"$BIN d $D/office_data/4.benc output.txt 1234567890abcdeffedcba0987654321",
+    data=[f"office_data/4.benc"],
+    outs=["output.txt"],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/bzip2",
+    cmd=f"$BIN -d -k -f -c $D/bzip2_data/8.bz2",
+    data=[f"bzip2_data/8.bz2"],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/crc32",
+    cmd=f"$BIN $D/telecom_data/2.pcm",
+    data=[f"telecom_data/2.pcm"],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/dijkstra",
+    cmd=f"$BIN $D/network_dijkstra_data/20.dat",
+    data=[f"network_dijkstra_data/20.dat"],
+)
+validator(
+    benchmark="benchmark://cbench-v1/gsm",
+    cmd=f"$BIN -fps -c $D/telecom_gsm_data/2.au",
+    data=[f"telecom_gsm_data/2.au"],
+)
+validator(
+    benchmark="benchmark://cbench-v1/jpeg-c",
+    cmd=f"$BIN -dct int -progressive -outfile output.jpeg $D/consumer_jpeg_data/17.ppm",
+    data=[f"consumer_jpeg_data/17.ppm"],
+    outs=["output.jpeg"],
+    # NOTE(cummins): AddressSanitizer disabled because of
+    # global-buffer-overflow in regular build.
+    sanitizers=[LlvmSanitizer.TSAN, LlvmSanitizer.UBSAN],
+)
+validator(
+    benchmark="benchmark://cbench-v1/jpeg-d",
+    cmd=f"$BIN -dct int -outfile output.ppm $D/consumer_jpeg_data/17.jpg",
+    data=[f"consumer_jpeg_data/17.jpg"],
+    outs=["output.ppm"],
+)
+validator(
+    benchmark="benchmark://cbench-v1/patricia",
+    cmd=f"$BIN $D/network_patricia_data/20.udp",
+    data=[f"network_patricia_data/20.udp"],
+    env={
+        # NOTE(cummins): Benchmark leaks when executed with safe optimizations.
+        "ASAN_OPTIONS": "detect_leaks=0",
+    },
+)
+validator(
+    benchmark="benchmark://cbench-v1/qsort",
+    cmd=f"$BIN $D/automotive_qsort_data/20.dat",
+    data=[f"automotive_qsort_data/20.dat"],
+    outs=["sorted_output.dat"],
+    linkopts=["-lm"],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/sha",
+    cmd=f"$BIN $D/office_data/4.txt",
+    data=[f"office_data/4.txt"],
+    compare_output=False,
+    validate_result=validate_sha_output,
+)
+validator(
+    benchmark="benchmark://cbench-v1/stringsearch",
+    cmd=f"$BIN $D/office_data/4.txt $D/office_data/4.s.txt output.txt",
+    data=[f"office_data/4.txt"],
+    outs=["output.txt"],
+    env={
+        # NOTE(cummins): Benchmark leaks when executed with safe optimizations.
+        "ASAN_OPTIONS": "detect_leaks=0",
+    },
+    linkopts=["-lm"],
+)
+
+
+validator(
+    benchmark="benchmark://cbench-v1/stringsearch2",
+    cmd=f"$BIN $D/office_data/4.txt $D/office_data/4.s.txt output.txt",
+    data=[f"office_data/4.txt"],
+    outs=["output.txt"],
+    env={
+        # NOTE(cummins): Benchmark leaks when executed with safe optimizations.
+        "ASAN_OPTIONS": "detect_leaks=0",
+    },
+    # TSAN disabled because of extremely long execution leading to
+    # timeouts.
+    sanitizers=[LlvmSanitizer.ASAN, LlvmSanitizer.MSAN, LlvmSanitizer.UBSAN],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/susan",
+    cmd=f"$BIN $D/automotive_susan_data/9.pgm output_large.corners.pgm -c",
+    data=[f"automotive_susan_data/9.pgm"],
+    outs=["output_large.corners.pgm"],
+    linkopts=["-lm"],
+)
+
+validator(
+    benchmark="benchmark://cbench-v1/tiff2bw",
+    cmd=f"$BIN $D/consumer_tiff_data/17.tif output.tif",
+    data=[f"consumer_tiff_data/17.tif"],
+    outs=["output.tif"],
+    linkopts=["-lm"],
+    env={
+        # NOTE(cummins): Benchmark leaks when executed with safe optimizations.
+        "ASAN_OPTIONS": "detect_leaks=0",
+    },
+)
+validator(
+    benchmark="benchmark://cbench-v1/tiff2rgba",
+    cmd=f"$BIN $D/consumer_tiff_data/17.tif output.tif",
+    data=[f"consumer_tiff_data/17.tif"],
+    outs=["output.tif"],
+    linkopts=["-lm"],
+)
+validator(
+    benchmark="benchmark://cbench-v1/tiffdither",
+    cmd=f"$BIN $D/consumer_tiff_data/17.bw.tif out.tif",
+    data=[f"consumer_tiff_data/17.bw.tif"],
+    outs=["out.tif"],
+    linkopts=["-lm"],
+)
+validator(
+    benchmark="benchmark://cbench-v1/tiffmedian",
+    cmd=f"$BIN $D/consumer_tiff_data/17.nocomp.tif output.tif",
+    data=[f"consumer_tiff_data/17.nocomp.tif"],
+    outs=["output.tif"],
+    linkopts=["-lm"],
+)
+
+'''
 validator(
     benchmark="benchmark://cbench-v1/bitcount",
     cmd="$BIN 1125000",
@@ -942,3 +1089,4 @@ for i in range(1, NUM_DATASETS + 1):
     #         linkopts=["-lm", "-lz"],
     #         pre_execution_callback=setup_ghostscript_library_files(i),
     #     )
+'''

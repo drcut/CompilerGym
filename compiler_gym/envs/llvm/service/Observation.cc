@@ -39,6 +39,7 @@ const programl::ProgramGraphOptions programlOptions;
 
 Status setObservation(LlvmObservationSpace space, const fs::path& workingDirectory,
                       Benchmark& benchmark, Event& reply) {
+  printf("set observation: %d\n", space);
   switch (space) {
     case LlvmObservationSpace::IR: {
       // Serialize the LLVM module to an IR string.

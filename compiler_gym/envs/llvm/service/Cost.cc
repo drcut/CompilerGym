@@ -168,7 +168,7 @@ util::LocalShellCommand getBuildCommand(const BenchmarkDynamicConfig& dynamicCon
         newCommand.add_argument(outfile);
       }
     }
-
+    printf("get here\n");
     newCommand.add_argument("-c");
 
     return util::LocalShellCommand(newCommand);
@@ -289,6 +289,7 @@ bool applyBaselineOptimizationsToModule(llvm::Module* module, unsigned optLevel,
 Status setCost(const LlvmCostFunction& costFunction, llvm::Module& module,
                const fs::path& workingDirectory, const BenchmarkDynamicConfig& dynamicConfig,
                double* cost) {
+                printf("cost func: %d\n", costFunction);
   switch (costFunction) {
     case LlvmCostFunction::IR_INSTRUCTION_COUNT: {
       *cost = static_cast<double>(module.getInstructionCount());

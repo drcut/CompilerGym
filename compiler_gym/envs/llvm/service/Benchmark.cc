@@ -302,14 +302,17 @@ Status Benchmark::compile() {
 
   // Write the bitcode to a file.
   RETURN_IF_ERROR(writeBitcodeToFile(scratchDirectory() / "out.bc"));
+  printf("write out.bc to: %s\n", (scratchDirectory() / "out.bc").c_str());
 
   // Check that the required sources exist.
   RETURN_IF_ERROR(cfg.buildCommand().checkInfiles());
 
   // Build the bitcode.
+  printf("before checkCall\n");
   const std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
   RETURN_IF_ERROR(cfg.buildCommand().checkCall());
   const auto end = std::chrono::steady_clock::now();
+  printf("after checkCall\n");
 
   // Check that the expected output files were generated.
   RETURN_IF_ERROR(cfg.buildCommand().checkOutfiles());

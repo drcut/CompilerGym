@@ -33,7 +33,11 @@ BenchmarkDynamicConfig realizeDynamicConfig(const BenchmarkDynamicConfigProto& p
   // Set up the environment variables.
   (*cfg.mutable_build_cmd()->mutable_env())["CC"] =
       util::getSiteDataPath("llvm-v0/bin/clang").string();
+  (*cfg.mutable_build_cmd()->mutable_env())["LLC"] =
+      util::getSiteDataPath("llvm-v0/bin/llc").string();
   (*cfg.mutable_build_cmd()->mutable_env())["IN"] = (scratchDirectory / "out.bc").string();
+  (*cfg.mutable_build_cmd()->mutable_env())["SCRATCHPATH"] = (scratchDirectory).string();
+  printf("CC: %s IN: %s\n", (*cfg.mutable_build_cmd()->mutable_env())["CC"].c_str(), (*cfg.mutable_build_cmd()->mutable_env())["IN"].c_str());
 
   // Register the IR as a pre-requisite build file.
   cfg.mutable_build_cmd()->add_infile((scratchDirectory / "out.bc").string());

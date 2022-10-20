@@ -55,10 +55,12 @@ LocalShellCommand::LocalShellCommand(const Command& cmd)
 Status LocalShellCommand::checkCall() const {
   boost::asio::io_context stderrStream;
   std::future<std::string> stderrFuture;
-
+  printf("command line: %s\n",commandline().c_str());
   try {
     bp::child process(arguments(), bp::std_out > bp::null, bp::std_err > stderrFuture, bp::shell,
                       stderrStream, env());
+    // bp::child process(arguments(), bp::std_out > stdout, bp::std_err > stderr, bp::shell,
+    //                   stderrStream, env());
     if (!wait_for(process, timeout())) {
       process.terminate();
       return Status(StatusCode::DEADLINE_EXCEEDED,
